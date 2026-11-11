@@ -9,9 +9,9 @@
 ![Data](https://img.shields.io/badge/data-MSCOCO%20%7C%20Flickr30k-3a9a4d)
 ![Type](https://img.shields.io/badge/type-seminar%20paper-d9822b)
 
-[Read the paper (PDF)](paper/Image_Captioning_Transforming_Objects_into_Words.pdf)
+[Read the paper (PDF)](paper/Image_Captioning_Transforming_Objects_into_Words.pdf) · [Open the notebook](code/image_captioning.ipynb)
 
-Farhan Ali Arshad, with Syed Huzaifa Ali and Tayyab Tariq
+Farhan Ali Arshad
 Trends in Natural Language Processing (NLP Seminar) · Universität Trier · Summer Semester 2024
 
 </div>
@@ -26,7 +26,8 @@ Good captions make images accessible to blind and low-vision users, improve cont
 enable richer human-computer interaction.
 
 This paper traces how captioning models developed between 2015 and 2024, compares the two dominant
-architecture families, and trains a CNN-RNN captioner to study its behaviour in practice.
+architecture families on the MSCOCO and Flickr30k benchmarks, and trains a CNN-RNN captioner on an assistive
+dataset for visually impaired users (traffic signals, banknotes, ATMs, stairs, bus stops).
 
 **Research question**
 
@@ -47,10 +48,13 @@ architecture families, and trains a CNN-RNN captioner to study its behaviour in 
 
 | Component | Details |
 |---|---|
-| **Benchmarks** | MSCOCO (330,000 images, 5 human captions each) and Flickr30k (30,000 images, 5 captions each) |
+| **Benchmarks reviewed** | MSCOCO (330,000 images, 5 human captions each) and Flickr30k (30,000 images, 5 captions each) |
+| **Experiment data** | Assistive-scene dataset for visually impaired users: 1,600 images with captions, split 80/20 by image; vocabulary of 150 words, captions up to 18 tokens |
 | **Feature extraction** | VGG16 pre-trained on ImageNet; 4096-d output of the last fully connected layer |
 | **Text preprocessing** | Tokenisation, lowercasing, `startseq` / `endseq` tokens around each caption |
-| **Training** | Custom data generator feeding batches of image features and caption prefixes; maximum likelihood training, with Self-Critical Sequence Training (SCST) discussed for optimising non-differentiable metrics |
+| **Caption model** | Image branch: Dense(256) on VGG16 features. Text branch: Embedding(256). The image vector is prepended to the word sequence, fed to an LSTM(256), added back to the image vector, then Dense(128) and a softmax over the vocabulary; dropout 0.5 |
+| **Training** | Custom Keras data generator yielding (image feature, caption prefix) to next-word pairs; categorical cross-entropy, Adam, batch size 64, 5 epochs. Self-Critical Sequence Training (SCST) is discussed for optimising non-differentiable metrics |
+| **Decoding** | Greedy search from `startseq` until `endseq` or the maximum length |
 | **Evaluation metrics** | BLEU (n-gram overlap), METEOR (synonyms, stemming, paraphrase), CIDEr (consensus with reference captions) |
 
 ## Results
@@ -80,8 +84,8 @@ generalise.
 
 <p align="center"><img src="assets/caption_predictions.png" width="90%" alt="Generated captions on assistive-scene images"></p>
 
-The model was also applied to assistive scenes such as banknotes, ATMs, stairs, bus stops and road works.
-It describes the scene type reliably ("please be careful upstairs ahead", "people are waiting at the bus stop"),
+On the assistive scenes (banknotes, ATMs, stairs, bus stops, road works; sampled from the training split),
+the model describes the scene type reliably ("please be careful upstairs ahead", "people are waiting at the bus stop"),
 but confuses fine-grained details, for example reading a 200 euro note as a ten euro note and a 50 pound note as
 twenty pounds. This matches the overfitting seen in the loss curves.
 
@@ -98,21 +102,52 @@ twenty pounds. This matches the overfitting seen in the loss curves.
 
 ## Future work
 
-- Regularise the CNN-RNN baseline and replace VGG16 with a stronger backbone (ResNet, ViT).
+- Fix the evaluation loop and report BLEU, METEOR and CIDEr on held-out images.
+- Regularise the CNN-RNN baseline (early stopping, augmentation) and replace VGG16 with a stronger backbone (ResNet, ViT).
 - Train a Transformer captioner on the same data for a direct comparison.
-- Report BLEU, METEOR and CIDEr on the MSCOCO and Flickr30k test splits.
 - Add further modalities such as audio and video for richer descriptions.
 
 ## Code
 
-The experiment code is available at <https://github.com/Tayyab304/NLP>.
+The full experiment is in [`code/image_captioning.ipynb`](code/image_captioning.ipynb) (TensorFlow / Keras),
+with its original outputs. It covers:
+
+1. Loading and cleaning the caption file, adding `startseq` / `endseq` tokens
+2. Tokenisation and an 80/20 train/validation split by image
+3. VGG16 feature extraction (penultimate layer, 4096-d) for every image
+4. A custom `Sequence` data generator producing next-word training pairs
+5. The merge-style CNN + LSTM caption model, training and the loss curve
+6. Greedy caption generation and sample predictions
+7. A BLEU evaluation cell
+
+Notebook adapted from the seminar project's original upload: <https://github.com/Tayyab304/NLP>.
+
+**Run it**
+
+```bash
+pip install tensorflow pandas numpy matplotlib seaborn tqdm nltk
+jupyter notebook code/image_captioning.ipynb
+```
+
+Set `image_path` and the caption file path in the second and third cells to your copy of the dataset. The dataset
+itself is not included in this repository.
+
+### Known limitations of the notebook
+
+- The sample predictions shown above are drawn from the **training** split (`train.sample(15)`), so they show what
+  the model memorised, not how it generalises.
+- The BLEU cell loops over the DataFrame's column names instead of the test images and reuses the last predicted
+  image, so its printed scores (BLEU-1 1.00, BLEU-2 0.93) are not a valid evaluation and are not reported here.
+- Images are scaled to [0, 1] instead of using VGG16's `preprocess_input`, which weakens the pre-trained features.
+- Early stopping and learning-rate scheduling are defined but commented out, which explains the rising
+  validation loss after epoch 2.
 
 ## Citation
 
 ```bibtex
 @misc{arshad2024imagecaptioning,
   title  = {Image Captioning: Transforming Objects into Words},
-  author = {Arshad, Farhan Ali and Ali, Syed Huzaifa and Tariq, Tayyab},
+  author = {Arshad, Farhan Ali},
   year   = {2024},
   note   = {Seminar paper, Trends in Natural Language Processing, Universit{\"a}t Trier}
 }
