@@ -11,7 +11,7 @@
 
 [Read the paper (PDF)](paper/Image_Captioning_Transforming_Objects_into_Words.pdf) · [Open the notebook](code/image_captioning.ipynb)
 
-Farhan Ali Arshad
+Farhan Ali Arshad, Syed Huzaifa Ali, Tayyab Tariq
 Trends in Natural Language Processing (NLP Seminar) · Universität Trier · Summer Semester 2024
 
 </div>
@@ -147,7 +147,7 @@ itself is not included in this repository.
 ```bibtex
 @misc{arshad2024imagecaptioning,
   title  = {Image Captioning: Transforming Objects into Words},
-  author = {Arshad, Farhan Ali},
+  author = {Arshad, Farhan Ali and Ali, Syed Huzaifa and Tariq, Tayyab},
   year   = {2024},
   note   = {Seminar paper, Trends in Natural Language Processing, Universit{\"a}t Trier}
 }
