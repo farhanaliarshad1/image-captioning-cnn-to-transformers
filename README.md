@@ -120,7 +120,7 @@ with its original outputs. It covers:
 6. Greedy caption generation and sample predictions
 7. A BLEU evaluation cell
 
-Notebook adapted from the seminar project's original upload: <https://github.com/Tayyab304/NLP>.
+The notebook was developed for the seminar project by the authors listed above and is maintained in this repository.
 
 **Run it**
 
