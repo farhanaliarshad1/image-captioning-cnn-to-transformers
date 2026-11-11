@@ -87,7 +87,7 @@ generalise.
 On the assistive scenes (banknotes, ATMs, stairs, bus stops, road works; sampled from the training split),
 the model describes the scene type reliably ("please be careful upstairs ahead", "people are waiting at the bus stop"),
 but confuses fine-grained details, for example reading a 200 euro note as a ten euro note and a 50 pound note as
-twenty pounds. This matches the overfitting seen in the loss curves.
+twenty pounds, even though these images were seen during training.
 
 ## Key findings
 
